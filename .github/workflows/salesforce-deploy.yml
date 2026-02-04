@@ -10,37 +10,27 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: ${{ github.ref_name == 'main' && 'DEV' || github.ref_name == 'release/qa' && 'QA' || 'PROD' }}
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Install Salesforce CLI
         run: npm install -g @salesforce/cli
 
-      - name: Select Environment
-        run: |
-          if [[ "${GITHUB_REF_NAME}" == "main" ]]; then
-            echo "ENV=DEV" >> $GITHUB_ENV
-          elif [[ "${GITHUB_REF_NAME}" == "release/qa" ]]; then
-            echo "ENV=QA" >> $GITHUB_ENV
-          elif [[ "${GITHUB_REF_NAME}" == "release/prod" ]]; then
-            echo "ENV=PROD" >> $GITHUB_ENV
-          fi
-
       - name: Authenticate Salesforce
         run: |
-          echo "${{ secrets['SF_PRIVATE_KEY_' + env.ENV] }}" > server.key
+          echo "${{ secrets.SF_PRIVATE_KEY }}" > server.key
           sf org login jwt \
-            --client-id ${{ secrets['SF_CLIENT_ID_' + env.ENV] }} \
+            --client-id ${{ secrets.SF_CLIENT_ID }} \
             --jwt-key-file server.key \
-            --username ${{ secrets['SF_USERNAME_' + env.ENV] }} \
-            --instance-url ${{ secrets['SF_INSTANCE_URL_' + env.ENV] }} \
+            --username ${{ secrets.SF_USERNAME }} \
+            --instance-url ${{ secrets.SF_INSTANCE_URL }} \
             --alias targetOrg
 
       - name: Deploy Metadata
         run: |
-          if [[ "${ENV}" == "DEV" ]]; then
+          if [[ "${GITHUB_REF_NAME}" == "main" ]]; then
             sf project deploy start --target-org targetOrg
           else
             sf project deploy start \
