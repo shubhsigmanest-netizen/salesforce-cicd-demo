@@ -26,5 +26,9 @@ jobs:
             --instance-url ${{ secrets.SF_INSTANCE_URL }} \
             --alias targetOrg
 
-      - name: Deploy to Salesforce
-        run: sf project deploy start --target-org targetOrg
+      - name: Deploy to Salesforce with Tests
+        run: |
+          sf project deploy start \
+            --target-org targetOrg \
+            --test-level RunLocalTests \
+            --wait 30
