@@ -7,6 +7,6 @@ public class HelloWorldTest {
         String result = HelloWorld.sayHello();
 
         // Assert expected result
-        System.assertEquals('Hello DEV Deployment', result);
+        System.assertEquals('Hello DEV', result);
     }
 }
